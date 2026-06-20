@@ -1,28 +1,8 @@
-CREATE EXTENSION IF NOT EXISTS "pgcrypto";--> statement-breakpoint
-CREATE OR REPLACE FUNCTION uuidv7()
-RETURNS uuid
-LANGUAGE plpgsql
-VOLATILE
-PARALLEL SAFE
-AS $$
-DECLARE
-	unix_ts_ms bytea;
-	random_bytes bytea;
-BEGIN
-	unix_ts_ms := substring(
-		int8send(floor(extract(epoch from clock_timestamp()) * 1000)::bigint)
-		from 3
-	);
-	random_bytes := gen_random_bytes(10);
-	random_bytes := set_byte(random_bytes, 0, (get_byte(random_bytes, 0) & 15) | 112);
-	random_bytes := set_byte(random_bytes, 2, (get_byte(random_bytes, 2) & 63) | 128);
-
-	RETURN encode(unix_ts_ms || random_bytes, 'hex')::uuid;
-END;
-$$;--> statement-breakpoint
 CREATE TYPE "public"."application_stage" AS ENUM('applied', 'screening', 'interview', 'technical', 'offer', 'hired', 'rejected', 'withdrawn');--> statement-breakpoint
 CREATE TYPE "public"."availability_type" AS ENUM('immediate', 'one_week', 'two_weeks', 'one_month', 'more_than_one_month', 'unavailable');--> statement-breakpoint
 CREATE TYPE "public"."contract_type" AS ENUM('clt', 'pj', 'internship', 'temporary', 'freelance');--> statement-breakpoint
+CREATE TYPE "public"."embedding_document_status" AS ENUM('pending', 'processing', 'embedded', 'stale', 'failed');--> statement-breakpoint
+CREATE TYPE "public"."embedding_entity_type" AS ENUM('organization', 'organization_profile', 'job', 'job_skill', 'candidate', 'candidate_skill', 'candidate_experience', 'application', 'application_stage_history', 'interview_note', 'subscription_plan', 'organization_subscription', 'organization_ai_usage', 'member', 'invitation', 'payment', 'audit_log');--> statement-breakpoint
 CREATE TYPE "public"."invitation_status" AS ENUM('pending', 'accepted', 'rejected', 'canceled', 'expired');--> statement-breakpoint
 CREATE TYPE "public"."job_status" AS ENUM('draft', 'published', 'paused', 'closed', 'archived');--> statement-breakpoint
 CREATE TYPE "public"."organization_role" AS ENUM('owner', 'admin', 'member', 'recruiter');--> statement-breakpoint
@@ -34,7 +14,7 @@ CREATE TYPE "public"."subscription_status" AS ENUM('trialing', 'active', 'past_d
 CREATE TYPE "public"."work_mode_preference" AS ENUM('remote', 'hybrid', 'onsite', 'flexible');--> statement-breakpoint
 CREATE TYPE "public"."work_mode" AS ENUM('remote', 'hybrid', 'onsite');--> statement-breakpoint
 CREATE TABLE "application_stage_history" (
-	"id" uuid PRIMARY KEY DEFAULT uuidv7() NOT NULL,
+	"id" uuid PRIMARY KEY NOT NULL,
 	"application_id" uuid NOT NULL,
 	"from_stage" "application_stage",
 	"to_stage" "application_stage" NOT NULL,
@@ -44,7 +24,7 @@ CREATE TABLE "application_stage_history" (
 );
 --> statement-breakpoint
 CREATE TABLE "application" (
-	"id" uuid PRIMARY KEY DEFAULT uuidv7() NOT NULL,
+	"id" uuid PRIMARY KEY NOT NULL,
 	"job_id" uuid NOT NULL,
 	"candidate_id" uuid NOT NULL,
 	"stage" "application_stage" DEFAULT 'applied' NOT NULL,
@@ -59,7 +39,7 @@ CREATE TABLE "application" (
 );
 --> statement-breakpoint
 CREATE TABLE "audit_log" (
-	"id" uuid PRIMARY KEY DEFAULT uuidv7() NOT NULL,
+	"id" uuid PRIMARY KEY NOT NULL,
 	"organization_id" uuid NOT NULL,
 	"user_id" uuid,
 	"action" text NOT NULL,
@@ -69,7 +49,7 @@ CREATE TABLE "audit_log" (
 );
 --> statement-breakpoint
 CREATE TABLE "account" (
-	"id" uuid PRIMARY KEY DEFAULT uuidv7() NOT NULL,
+	"id" uuid PRIMARY KEY NOT NULL,
 	"account_id" text NOT NULL,
 	"provider_id" text NOT NULL,
 	"user_id" uuid NOT NULL,
@@ -85,7 +65,7 @@ CREATE TABLE "account" (
 );
 --> statement-breakpoint
 CREATE TABLE "invitation" (
-	"id" uuid PRIMARY KEY DEFAULT uuidv7() NOT NULL,
+	"id" uuid PRIMARY KEY NOT NULL,
 	"organization_id" uuid NOT NULL,
 	"email" text NOT NULL,
 	"role" "organization_role" DEFAULT 'recruiter' NOT NULL,
@@ -96,7 +76,7 @@ CREATE TABLE "invitation" (
 );
 --> statement-breakpoint
 CREATE TABLE "member" (
-	"id" uuid PRIMARY KEY DEFAULT uuidv7() NOT NULL,
+	"id" uuid PRIMARY KEY NOT NULL,
 	"organization_id" uuid NOT NULL,
 	"user_id" uuid NOT NULL,
 	"role" "organization_role" DEFAULT 'recruiter' NOT NULL,
@@ -104,7 +84,7 @@ CREATE TABLE "member" (
 );
 --> statement-breakpoint
 CREATE TABLE "organization" (
-	"id" uuid PRIMARY KEY DEFAULT uuidv7() NOT NULL,
+	"id" uuid PRIMARY KEY NOT NULL,
 	"name" text NOT NULL,
 	"slug" text NOT NULL,
 	"logo" text,
@@ -114,12 +94,14 @@ CREATE TABLE "organization" (
 );
 --> statement-breakpoint
 CREATE TABLE "organization_ai_usage" (
-	"id" uuid PRIMARY KEY DEFAULT uuidv7() NOT NULL,
+	"id" uuid PRIMARY KEY NOT NULL,
 	"organization_id" uuid NOT NULL,
 	"year" integer NOT NULL,
 	"month" integer NOT NULL,
 	"prompt_tokens" integer DEFAULT 0 NOT NULL,
 	"completion_tokens" integer DEFAULT 0 NOT NULL,
+	"embedding_tokens" integer DEFAULT 0 NOT NULL,
+	"cached_tokens" integer DEFAULT 0 NOT NULL,
 	"requests_count" integer DEFAULT 0 NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
@@ -159,7 +141,7 @@ CREATE TABLE "organization_subscription" (
 );
 --> statement-breakpoint
 CREATE TABLE "session" (
-	"id" uuid PRIMARY KEY DEFAULT uuidv7() NOT NULL,
+	"id" uuid PRIMARY KEY NOT NULL,
 	"expires_at" timestamp with time zone NOT NULL,
 	"token" text NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
@@ -172,7 +154,7 @@ CREATE TABLE "session" (
 );
 --> statement-breakpoint
 CREATE TABLE "user" (
-	"id" uuid PRIMARY KEY DEFAULT uuidv7() NOT NULL,
+	"id" uuid PRIMARY KEY NOT NULL,
 	"name" text NOT NULL,
 	"email" text NOT NULL,
 	"email_verified" boolean DEFAULT false NOT NULL,
@@ -183,7 +165,7 @@ CREATE TABLE "user" (
 );
 --> statement-breakpoint
 CREATE TABLE "verification" (
-	"id" uuid PRIMARY KEY DEFAULT uuidv7() NOT NULL,
+	"id" uuid PRIMARY KEY NOT NULL,
 	"identifier" text NOT NULL,
 	"value" text NOT NULL,
 	"expires_at" timestamp with time zone NOT NULL,
@@ -192,7 +174,7 @@ CREATE TABLE "verification" (
 );
 --> statement-breakpoint
 CREATE TABLE "candidate_experience" (
-	"id" uuid PRIMARY KEY DEFAULT uuidv7() NOT NULL,
+	"id" uuid PRIMARY KEY NOT NULL,
 	"candidate_id" uuid NOT NULL,
 	"company" text NOT NULL,
 	"role" text NOT NULL,
@@ -205,14 +187,14 @@ CREATE TABLE "candidate_experience" (
 );
 --> statement-breakpoint
 CREATE TABLE "candidate_skill" (
-	"id" uuid PRIMARY KEY DEFAULT uuidv7() NOT NULL,
+	"id" uuid PRIMARY KEY NOT NULL,
 	"candidate_id" uuid NOT NULL,
 	"skill" text NOT NULL,
 	"years" integer
 );
 --> statement-breakpoint
 CREATE TABLE "candidate" (
-	"id" uuid PRIMARY KEY DEFAULT uuidv7() NOT NULL,
+	"id" uuid PRIMARY KEY NOT NULL,
 	"full_name" text NOT NULL,
 	"email" text NOT NULL,
 	"phone" text,
@@ -239,8 +221,38 @@ CREATE TABLE "candidate" (
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
+CREATE TABLE "embedding_chunk" (
+	"id" uuid PRIMARY KEY NOT NULL,
+	"document_id" uuid NOT NULL,
+	"chunk_index" integer NOT NULL,
+	"content" text NOT NULL,
+	"content_hash" text NOT NULL,
+	"token_count" integer,
+	"embedding" vector(1536) NOT NULL,
+	"metadata" jsonb DEFAULT '{}'::jsonb NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "embedding_document" (
+	"id" uuid PRIMARY KEY NOT NULL,
+	"organization_id" uuid,
+	"entity_type" "embedding_entity_type" NOT NULL,
+	"entity_id" uuid NOT NULL,
+	"source" text NOT NULL,
+	"source_hash" text NOT NULL,
+	"embedding_model" text NOT NULL,
+	"embedding_dimensions" integer DEFAULT 1536 NOT NULL,
+	"status" "embedding_document_status" DEFAULT 'pending' NOT NULL,
+	"metadata" jsonb DEFAULT '{}'::jsonb NOT NULL,
+	"last_embedded_at" timestamp with time zone,
+	"error_message" text,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
 CREATE TABLE "interview_note" (
-	"id" uuid PRIMARY KEY DEFAULT uuidv7() NOT NULL,
+	"id" uuid PRIMARY KEY NOT NULL,
 	"application_id" uuid NOT NULL,
 	"author_id" uuid NOT NULL,
 	"content" text NOT NULL,
@@ -250,14 +262,14 @@ CREATE TABLE "interview_note" (
 );
 --> statement-breakpoint
 CREATE TABLE "job_skill" (
-	"id" uuid PRIMARY KEY DEFAULT uuidv7() NOT NULL,
+	"id" uuid PRIMARY KEY NOT NULL,
 	"job_id" uuid NOT NULL,
 	"skill" text NOT NULL,
 	"required" boolean DEFAULT true NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "job" (
-	"id" uuid PRIMARY KEY DEFAULT uuidv7() NOT NULL,
+	"id" uuid PRIMARY KEY NOT NULL,
 	"organization_id" uuid NOT NULL,
 	"recruiter_id" uuid NOT NULL,
 	"title" text NOT NULL,
@@ -286,7 +298,7 @@ CREATE TABLE "job" (
 );
 --> statement-breakpoint
 CREATE TABLE "payment" (
-	"id" uuid PRIMARY KEY DEFAULT uuidv7() NOT NULL,
+	"id" uuid PRIMARY KEY NOT NULL,
 	"organization_id" uuid NOT NULL,
 	"amount_in_cents" integer NOT NULL,
 	"currency" text DEFAULT 'BRL' NOT NULL,
@@ -299,7 +311,7 @@ CREATE TABLE "payment" (
 );
 --> statement-breakpoint
 CREATE TABLE "subscription_plan" (
-	"id" uuid PRIMARY KEY DEFAULT uuidv7() NOT NULL,
+	"id" uuid PRIMARY KEY NOT NULL,
 	"name" text NOT NULL,
 	"slug" "plan" NOT NULL,
 	"description" text,
@@ -336,6 +348,8 @@ ALTER TABLE "session" ADD CONSTRAINT "session_user_id_user_id_fk" FOREIGN KEY ("
 ALTER TABLE "session" ADD CONSTRAINT "session_active_organization_id_organization_id_fk" FOREIGN KEY ("active_organization_id") REFERENCES "public"."organization"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "candidate_experience" ADD CONSTRAINT "candidate_experience_candidate_id_candidate_id_fk" FOREIGN KEY ("candidate_id") REFERENCES "public"."candidate"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "candidate_skill" ADD CONSTRAINT "candidate_skill_candidate_id_candidate_id_fk" FOREIGN KEY ("candidate_id") REFERENCES "public"."candidate"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "embedding_chunk" ADD CONSTRAINT "embedding_chunk_document_id_embedding_document_id_fk" FOREIGN KEY ("document_id") REFERENCES "public"."embedding_document"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "embedding_document" ADD CONSTRAINT "embedding_document_organization_id_organization_id_fk" FOREIGN KEY ("organization_id") REFERENCES "public"."organization"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "interview_note" ADD CONSTRAINT "interview_note_application_id_application_id_fk" FOREIGN KEY ("application_id") REFERENCES "public"."application"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "interview_note" ADD CONSTRAINT "interview_note_author_id_user_id_fk" FOREIGN KEY ("author_id") REFERENCES "public"."user"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "job_skill" ADD CONSTRAINT "job_skill_job_id_job_id_fk" FOREIGN KEY ("job_id") REFERENCES "public"."job"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -374,6 +388,14 @@ CREATE UNIQUE INDEX "candidate_skill_candidate_skill_uidx" ON "candidate_skill" 
 CREATE UNIQUE INDEX "candidate_email_uidx" ON "candidate" USING btree ("email");--> statement-breakpoint
 CREATE UNIQUE INDEX "candidate_document_cpf_uidx" ON "candidate" USING btree ("document_cpf");--> statement-breakpoint
 CREATE INDEX "candidate_name_idx" ON "candidate" USING btree ("full_name");--> statement-breakpoint
+CREATE INDEX "embedding_chunk_document_id_idx" ON "embedding_chunk" USING btree ("document_id");--> statement-breakpoint
+CREATE UNIQUE INDEX "embedding_chunk_document_index_uidx" ON "embedding_chunk" USING btree ("document_id","chunk_index");--> statement-breakpoint
+CREATE UNIQUE INDEX "embedding_chunk_document_hash_uidx" ON "embedding_chunk" USING btree ("document_id","content_hash");--> statement-breakpoint
+CREATE INDEX "embedding_chunk_embedding_hnsw_idx" ON "embedding_chunk" USING hnsw ("embedding" vector_cosine_ops);--> statement-breakpoint
+CREATE INDEX "embedding_document_organization_id_idx" ON "embedding_document" USING btree ("organization_id");--> statement-breakpoint
+CREATE INDEX "embedding_document_entity_idx" ON "embedding_document" USING btree ("entity_type","entity_id");--> statement-breakpoint
+CREATE INDEX "embedding_document_status_idx" ON "embedding_document" USING btree ("status");--> statement-breakpoint
+CREATE UNIQUE INDEX "embedding_document_source_uidx" ON "embedding_document" USING btree ("entity_type","entity_id","source","embedding_model","source_hash");--> statement-breakpoint
 CREATE INDEX "interview_note_application_id_idx" ON "interview_note" USING btree ("application_id");--> statement-breakpoint
 CREATE INDEX "interview_note_author_id_idx" ON "interview_note" USING btree ("author_id");--> statement-breakpoint
 CREATE INDEX "job_skill_job_id_idx" ON "job_skill" USING btree ("job_id");--> statement-breakpoint

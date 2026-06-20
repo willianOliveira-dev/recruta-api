@@ -1,5 +1,5 @@
 {
-  "id": "c572a714-8bd2-4005-8055-d1000025c087",
+  "id": "141e53ae-cbe7-479a-8721-7b5832c56540",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -12,8 +12,7 @@
           "name": "id",
           "type": "uuid",
           "primaryKey": true,
-          "notNull": true,
-          "default": "uuidv7()"
+          "notNull": true
         },
         "application_id": {
           "name": "application_id",
@@ -129,8 +128,7 @@
           "name": "id",
           "type": "uuid",
           "primaryKey": true,
-          "notNull": true,
-          "default": "uuidv7()"
+          "notNull": true
         },
         "job_id": {
           "name": "job_id",
@@ -322,8 +320,7 @@
           "name": "id",
           "type": "uuid",
           "primaryKey": true,
-          "notNull": true,
-          "default": "uuidv7()"
+          "notNull": true
         },
         "organization_id": {
           "name": "organization_id",
@@ -473,8 +470,7 @@
           "name": "id",
           "type": "uuid",
           "primaryKey": true,
-          "notNull": true,
-          "default": "uuidv7()"
+          "notNull": true
         },
         "account_id": {
           "name": "account_id",
@@ -618,8 +614,7 @@
           "name": "id",
           "type": "uuid",
           "primaryKey": true,
-          "notNull": true,
-          "default": "uuidv7()"
+          "notNull": true
         },
         "organization_id": {
           "name": "organization_id",
@@ -764,8 +759,7 @@
           "name": "id",
           "type": "uuid",
           "primaryKey": true,
-          "notNull": true,
-          "default": "uuidv7()"
+          "notNull": true
         },
         "organization_id": {
           "name": "organization_id",
@@ -890,8 +884,7 @@
           "name": "id",
           "type": "uuid",
           "primaryKey": true,
-          "notNull": true,
-          "default": "uuidv7()"
+          "notNull": true
         },
         "name": {
           "name": "name",
@@ -977,8 +970,7 @@
           "name": "id",
           "type": "uuid",
           "primaryKey": true,
-          "notNull": true,
-          "default": "uuidv7()"
+          "notNull": true
         },
         "organization_id": {
           "name": "organization_id",
@@ -1007,6 +999,20 @@
         },
         "completion_tokens": {
           "name": "completion_tokens",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "embedding_tokens": {
+          "name": "embedding_tokens",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "cached_tokens": {
+          "name": "cached_tokens",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
@@ -1375,8 +1381,7 @@
           "name": "id",
           "type": "uuid",
           "primaryKey": true,
-          "notNull": true,
-          "default": "uuidv7()"
+          "notNull": true
         },
         "expires_at": {
           "name": "expires_at",
@@ -1511,8 +1516,7 @@
           "name": "id",
           "type": "uuid",
           "primaryKey": true,
-          "notNull": true,
-          "default": "uuidv7()"
+          "notNull": true
         },
         "name": {
           "name": "name",
@@ -1578,8 +1582,7 @@
           "name": "id",
           "type": "uuid",
           "primaryKey": true,
-          "notNull": true,
-          "default": "uuidv7()"
+          "notNull": true
         },
         "identifier": {
           "name": "identifier",
@@ -1646,8 +1649,7 @@
           "name": "id",
           "type": "uuid",
           "primaryKey": true,
-          "notNull": true,
-          "default": "uuidv7()"
+          "notNull": true
         },
         "candidate_id": {
           "name": "candidate_id",
@@ -1753,8 +1755,7 @@
           "name": "id",
           "type": "uuid",
           "primaryKey": true,
-          "notNull": true,
-          "default": "uuidv7()"
+          "notNull": true
         },
         "candidate_id": {
           "name": "candidate_id",
@@ -1842,8 +1843,7 @@
           "name": "id",
           "type": "uuid",
           "primaryKey": true,
-          "notNull": true,
-          "default": "uuidv7()"
+          "notNull": true
         },
         "full_name": {
           "name": "full_name",
@@ -2050,6 +2050,379 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.embedding_chunk": {
+      "name": "embedding_chunk",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "document_id": {
+          "name": "document_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "chunk_index": {
+          "name": "chunk_index",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "content": {
+          "name": "content",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "content_hash": {
+          "name": "content_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "token_count": {
+          "name": "token_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "embedding": {
+          "name": "embedding",
+          "type": "vector(1536)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "metadata": {
+          "name": "metadata",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::jsonb"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "embedding_chunk_document_id_idx": {
+          "name": "embedding_chunk_document_id_idx",
+          "columns": [
+            {
+              "expression": "document_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "embedding_chunk_document_index_uidx": {
+          "name": "embedding_chunk_document_index_uidx",
+          "columns": [
+            {
+              "expression": "document_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "chunk_index",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "embedding_chunk_document_hash_uidx": {
+          "name": "embedding_chunk_document_hash_uidx",
+          "columns": [
+            {
+              "expression": "document_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "content_hash",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "embedding_chunk_embedding_hnsw_idx": {
+          "name": "embedding_chunk_embedding_hnsw_idx",
+          "columns": [
+            {
+              "expression": "embedding",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "vector_cosine_ops"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "hnsw",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "embedding_chunk_document_id_embedding_document_id_fk": {
+          "name": "embedding_chunk_document_id_embedding_document_id_fk",
+          "tableFrom": "embedding_chunk",
+          "tableTo": "embedding_document",
+          "columnsFrom": [
+            "document_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.embedding_document": {
+      "name": "embedding_document",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "organization_id": {
+          "name": "organization_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "entity_type": {
+          "name": "entity_type",
+          "type": "embedding_entity_type",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "entity_id": {
+          "name": "entity_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "source": {
+          "name": "source",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "source_hash": {
+          "name": "source_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "embedding_model": {
+          "name": "embedding_model",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "embedding_dimensions": {
+          "name": "embedding_dimensions",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1536
+        },
+        "status": {
+          "name": "status",
+          "type": "embedding_document_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pending'"
+        },
+        "metadata": {
+          "name": "metadata",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::jsonb"
+        },
+        "last_embedded_at": {
+          "name": "last_embedded_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "error_message": {
+          "name": "error_message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "embedding_document_organization_id_idx": {
+          "name": "embedding_document_organization_id_idx",
+          "columns": [
+            {
+              "expression": "organization_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "embedding_document_entity_idx": {
+          "name": "embedding_document_entity_idx",
+          "columns": [
+            {
+              "expression": "entity_type",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "entity_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "embedding_document_status_idx": {
+          "name": "embedding_document_status_idx",
+          "columns": [
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "embedding_document_source_uidx": {
+          "name": "embedding_document_source_uidx",
+          "columns": [
+            {
+              "expression": "entity_type",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "entity_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "source",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "embedding_model",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "source_hash",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "embedding_document_organization_id_organization_id_fk": {
+          "name": "embedding_document_organization_id_organization_id_fk",
+          "tableFrom": "embedding_document",
+          "tableTo": "organization",
+          "columnsFrom": [
+            "organization_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.interview_note": {
       "name": "interview_note",
       "schema": "",
@@ -2058,8 +2431,7 @@
           "name": "id",
           "type": "uuid",
           "primaryKey": true,
-          "notNull": true,
-          "default": "uuidv7()"
+          "notNull": true
         },
         "application_id": {
           "name": "application_id",
@@ -2174,8 +2546,7 @@
           "name": "id",
           "type": "uuid",
           "primaryKey": true,
-          "notNull": true,
-          "default": "uuidv7()"
+          "notNull": true
         },
         "job_id": {
           "name": "job_id",
@@ -2264,8 +2635,7 @@
           "name": "id",
           "type": "uuid",
           "primaryKey": true,
-          "notNull": true,
-          "default": "uuidv7()"
+          "notNull": true
         },
         "organization_id": {
           "name": "organization_id",
@@ -2537,8 +2907,7 @@
           "name": "id",
           "type": "uuid",
           "primaryKey": true,
-          "notNull": true,
-          "default": "uuidv7()"
+          "notNull": true
         },
         "organization_id": {
           "name": "organization_id",
@@ -2683,8 +3052,7 @@
           "name": "id",
           "type": "uuid",
           "primaryKey": true,
-          "notNull": true,
-          "default": "uuidv7()"
+          "notNull": true
         },
         "name": {
           "name": "name",
@@ -2839,6 +3207,40 @@
         "internship",
         "temporary",
         "freelance"
+      ]
+    },
+    "public.embedding_document_status": {
+      "name": "embedding_document_status",
+      "schema": "public",
+      "values": [
+        "pending",
+        "processing",
+        "embedded",
+        "stale",
+        "failed"
+      ]
+    },
+    "public.embedding_entity_type": {
+      "name": "embedding_entity_type",
+      "schema": "public",
+      "values": [
+        "organization",
+        "organization_profile",
+        "job",
+        "job_skill",
+        "candidate",
+        "candidate_skill",
+        "candidate_experience",
+        "application",
+        "application_stage_history",
+        "interview_note",
+        "subscription_plan",
+        "organization_subscription",
+        "organization_ai_usage",
+        "member",
+        "invitation",
+        "payment",
+        "audit_log"
       ]
     },
     "public.invitation_status": {
