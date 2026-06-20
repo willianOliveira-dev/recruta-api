@@ -146,6 +146,8 @@ export const organizationAiUsage = pgTable(
     month: integer('month').notNull(),
     promptTokens: integer('prompt_tokens').default(0).notNull(),
     completionTokens: integer('completion_tokens').default(0).notNull(),
+    embeddingTokens: integer('embedding_tokens').default(0).notNull(),
+    cachedTokens: integer('cached_tokens').default(0).notNull(),
     requestsCount: integer('requests_count').default(0).notNull(),
     createdAt: createdAt(),
     updatedAt: updatedAt(),

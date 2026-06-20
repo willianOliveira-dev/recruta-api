@@ -1,9 +1,9 @@
-import { sql } from 'drizzle-orm';
 import { timestamp, uuid } from 'drizzle-orm/pg-core';
+import { v7 as uuidv7Value } from 'uuid';
 
-export const uuidv7Default = sql`uuidv7()`;
+export const EMBEDDING_DIMENSIONS = 1536;
 
-export const uuidv7 = (name: string) => uuid(name).default(uuidv7Default);
+export const uuidv7 = (name: string) => uuid(name).$defaultFn(uuidv7Value);
 
 export const uuidv7PrimaryKey = (name = 'id') => uuidv7(name).primaryKey();
 
