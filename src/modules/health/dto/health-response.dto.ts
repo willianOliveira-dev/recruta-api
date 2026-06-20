@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { HttpResponseMetaDto } from '../../common/http/dto/http-response-meta.dto';
+import { HttpResponseMetaDto } from '../../../common/http/dto/http-response-meta.dto';
 
 export class HealthDataDto {
   @ApiProperty({ example: 'ok' })
