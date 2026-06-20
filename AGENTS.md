@@ -50,6 +50,7 @@ These ATS/career skills are not product instructions to help candidates bypass s
 - Keep the system intact: every change must preserve build, type safety, database consistency, API contracts, tenant isolation, and existing behavior unless an intentional migration path is documented.
 - Do not leave modeled work blank: anything introduced in the database schema must be used, configured, and implemented in the application flow, or explicitly documented as a staged follow-up with the reason it is not yet wired.
 - Use the code-review skill as a quality gate for implementation direction, scalability, SOLID adherence, security, data integrity, and operational reliability before considering a task complete.
+- Use the project logger through dependency injection for relevant API actions, state changes, authorization denials, retries, and operational failures. Prefer structured logs with event names and safe identifiers; never log secrets, session tokens, credentials, raw documents, CNPJ payloads, or sensitive candidate/profile data.
 
 ## ATS Domain Baseline
 

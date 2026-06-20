@@ -1,4 +1,5 @@
 import { ConflictException, ForbiddenException } from '@nestjs/common';
+import type { ApplicationLogger } from '../../../common/logger/logger.tokens';
 import type { AuthenticatedSession } from '../../auth/types/authenticated-request';
 import type { OrganizationProfileDto } from '../dto/organization-profile.dto';
 import type { OrganizationsRepository } from '../repositories/organizations.repository';
@@ -13,6 +14,11 @@ interface RepositoryMock {
   createWithOwner: jest.Mock;
   findScopedOrganization: jest.Mock;
   upsertProfile: jest.Mock;
+}
+
+interface LoggerMock {
+  log: jest.Mock;
+  warn: jest.Mock;
 }
 
 interface CreateOrganizationInputMock {
@@ -66,6 +72,7 @@ const uniqueViolation = (constraint: string) =>
 
 describe('OrganizationsService', () => {
   let repository: RepositoryMock;
+  let logger: LoggerMock;
   let service: OrganizationsService;
 
   beforeEach(() => {
@@ -74,9 +81,14 @@ describe('OrganizationsService', () => {
       findScopedOrganization: jest.fn(),
       upsertProfile: jest.fn(),
     };
+    logger = {
+      log: jest.fn(),
+      warn: jest.fn(),
+    };
 
     service = new OrganizationsService(
       repository as unknown as OrganizationsRepository,
+      logger as unknown as ApplicationLogger,
     );
   });
 

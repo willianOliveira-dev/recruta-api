@@ -2,9 +2,14 @@ import {
   BadRequestException,
   ConflictException,
   ForbiddenException,
+  Inject,
   Injectable,
 } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
+import {
+  APP_LOGGER,
+  type ApplicationLogger,
+} from '../../../common/logger/logger.tokens';
 import type { AuthenticatedSession } from '../../auth/types/authenticated-request';
 import { normalizeCnpj } from '../domain/brazilian-company-document';
 import { normalizePostalCode } from '../domain/brazilian-postal-code';
@@ -73,6 +78,8 @@ const isUniqueViolation = (error: unknown, constraint: string) =>
 export class OrganizationsService {
   constructor(
     private readonly organizationsRepository: OrganizationsRepository,
+    @Inject(APP_LOGGER)
+    private readonly logger: ApplicationLogger,
   ) {}
 
   async create(
@@ -94,13 +101,32 @@ export class OrganizationsService {
           profile,
         });
 
+        this.logger.log(
+          {
+            event: 'organization.created',
+            organizationId: created.organization.id,
+            ownerUserId: session.user.id,
+            slug: created.organization.slug,
+          },
+          'OrganizationsService',
+        );
+
         return this.toResponse(created);
       } catch (error) {
-        
         this.throwProfileConflictIfNeeded(error);
 
         if (isUniqueViolation(error, ORGANIZATION_SLUG_UNIQUE_CONSTRAINT)) {
           if (attempt < SLUG_SUFFIX_ATTEMPTS) {
+            this.logger.warn(
+              {
+                event: 'organization.slug_conflict_retry',
+                ownerUserId: session.user.id,
+                attemptedSlug: slug,
+                attempt,
+              },
+              'OrganizationsService',
+            );
+
             continue;
           }
 
@@ -125,6 +151,15 @@ export class OrganizationsService {
       );
 
     if (!scopedOrganization) {
+      this.logger.warn(
+        {
+          event: 'organization.scope_forbidden',
+          userId: session.user.id,
+          organizationId,
+        },
+        'OrganizationsService',
+      );
+
       throw new ForbiddenException({
         code: 'ORGANIZATION_SCOPE_FORBIDDEN',
         message: 'User is not a member of the active organization',
@@ -139,7 +174,7 @@ export class OrganizationsService {
     dto: OrganizationProfileDto,
   ): Promise<OrganizationResponseDto> {
     const current = await this.getCurrent(session);
-    this.assertCanUpdateProfile(current.role);
+    this.assertCanUpdateProfile(current.role, session.user.id, current.id);
     const normalizedProfile = this.normalizeRequiredProfile(dto);
 
     let profile: OrganizationProfileData;
@@ -154,6 +189,15 @@ export class OrganizationsService {
       this.throwProfileConflictIfNeeded(error);
       throw error;
     }
+
+    this.logger.log(
+      {
+        event: 'organization.profile_updated',
+        organizationId: current.id,
+        actorUserId: session.user.id,
+      },
+      'OrganizationsService',
+    );
 
     return {
       ...current,
@@ -196,10 +240,24 @@ export class OrganizationsService {
     return this.normalizeProfile(profile) ?? {};
   }
 
-  private assertCanUpdateProfile(role: string) {
+  private assertCanUpdateProfile(
+    role: string,
+    actorUserId: string,
+    organizationId: string,
+  ) {
     if (ORGANIZATION_PROFILE_MANAGER_ROLES.has(role)) {
       return;
     }
+
+    this.logger.warn(
+      {
+        event: 'organization.profile_update_forbidden',
+        actorUserId,
+        organizationId,
+        role,
+      },
+      'OrganizationsService',
+    );
 
     throw new ForbiddenException({
       code: 'ORGANIZATION_PROFILE_UPDATE_FORBIDDEN',
