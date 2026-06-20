@@ -1,13 +1,19 @@
 import type { INestApplication } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { apiReference } from '@scalar/nestjs-api-reference';
+import {
+  AUTH_OPENAPI_SCHEMA_PATH,
+  DOCS_URL,
+  OPENAPI_JSON_URL,
+  OPENAPI_YAML_URL,
+} from './api-routes.config';
 
 export const setupSwagger = (app: INestApplication) => {
   const config = new DocumentBuilder()
     .setTitle('Recruta API')
     .setDescription('Documentacao OpenAPI da API principal do Recruta.')
     .setVersion('1.0.0')
-    .addServer('/api', 'API')
+    .addServer('/', 'Current host')
     .addBearerAuth(
       {
         type: 'http',
@@ -32,21 +38,21 @@ export const setupSwagger = (app: INestApplication) => {
   SwaggerModule.setup('openapi', app, document, {
     ui: false,
     raw: ['json', 'yaml'],
-    jsonDocumentUrl: '/openapi.json',
-    yamlDocumentUrl: '/openapi.yaml',
+    jsonDocumentUrl: OPENAPI_JSON_URL,
+    yamlDocumentUrl: OPENAPI_YAML_URL,
   });
 
   app.use(
-    '/docs',
+    DOCS_URL,
     apiReference({
       sources: [
         {
           title: 'Recruta API',
-          url: '/openapi.json',
+          url: OPENAPI_JSON_URL,
         },
         {
-          title: 'Better Auth',
-          url: '/api/auth/open-api/generate-schema',
+          title: 'Auth',
+          url: AUTH_OPENAPI_SCHEMA_PATH,
         },
       ],
       theme: 'default',
