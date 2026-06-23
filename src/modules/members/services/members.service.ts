@@ -11,6 +11,10 @@ import {
   type ApplicationLogger,
 } from '../../../common/logger/logger.tokens';
 import type { AuthenticatedSession } from '../../auth/types/authenticated-request';
+import {
+  PlanLimitsService,
+  type MembershipCapacity,
+} from '../../subscription-plans/services/plan-limits.service';
 import { LastOrganizationOwnerError } from '../domain/member-errors';
 import {
   isOwnerRole,
@@ -25,7 +29,6 @@ import type {
 import type { UpdateMemberRoleDto } from '../dto/update-member-role.dto';
 import {
   type MemberRecord,
-  type MembershipCapacity,
   MembersRepository,
 } from '../repositories/members.repository';
 
@@ -33,6 +36,7 @@ import {
 export class MembersService {
   constructor(
     private readonly membersRepository: MembersRepository,
+    private readonly planLimitsService: PlanLimitsService,
     @Inject(APP_LOGGER)
     private readonly logger: ApplicationLogger,
   ) {}
@@ -45,7 +49,7 @@ export class MembersService {
 
     const [members, capacity] = await Promise.all([
       this.membersRepository.listByOrganization(organizationId),
-      this.membersRepository.getMembershipCapacity(organizationId),
+      this.planLimitsService.getMembershipCapacity(organizationId),
     ]);
 
     return {
@@ -132,24 +136,7 @@ export class MembersService {
   }
 
   async assertCanAddMember(organizationId: string): Promise<void> {
-    const capacity =
-      await this.membersRepository.getMembershipCapacity(organizationId);
-
-    if (capacity.maxUsers === null) {
-      throw new ForbiddenException({
-        code: 'ORGANIZATION_SUBSCRIPTION_REQUIRED',
-        message: 'Active subscription plan is required to add members',
-      });
-    }
-
-    if (capacity.currentUsers < capacity.maxUsers) {
-      return;
-    }
-
-    throw new ForbiddenException({
-      code: 'PLAN_LIMIT_EXCEEDED',
-      message: 'Organization user limit exceeded',
-    });
+    await this.planLimitsService.assertCanAddMember(organizationId);
   }
 
   private async getScopedActor(

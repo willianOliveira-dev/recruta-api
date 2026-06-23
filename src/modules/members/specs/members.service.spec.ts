@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import type { ApplicationLogger } from '../../../common/logger/logger.tokens';
 import type { AuthenticatedSession } from '../../auth/types/authenticated-request';
+import type { PlanLimitsService } from '../../subscription-plans/services/plan-limits.service';
 import { LastOrganizationOwnerError } from '../domain/member-errors';
 import type { MemberRole } from '../domain/member-role';
 import type { MembersRepository } from '../repositories/members.repository';
@@ -13,16 +14,24 @@ jest.mock('../repositories/members.repository', () => ({
   MembersRepository: class MembersRepository {},
 }));
 
+jest.mock('../../subscription-plans/services/plan-limits.service', () => ({
+  PlanLimitsService: class PlanLimitsService {},
+}));
+
 import { MembersService } from '../services/members.service';
 
 interface RepositoryMock {
   findByUser: jest.Mock;
   findById: jest.Mock;
   listByOrganization: jest.Mock;
-  getMembershipCapacity: jest.Mock;
   countOwners: jest.Mock;
   updateRole: jest.Mock;
   remove: jest.Mock;
+}
+
+interface PlanLimitsServiceMock {
+  getMembershipCapacity: jest.Mock;
+  assertCanAddMember: jest.Mock;
 }
 
 interface LoggerMock {
@@ -72,6 +81,7 @@ const makeMember = (
 
 describe('MembersService', () => {
   let repository: RepositoryMock;
+  let planLimitsService: PlanLimitsServiceMock;
   let logger: LoggerMock;
   let service: MembersService;
 
@@ -80,10 +90,13 @@ describe('MembersService', () => {
       findByUser: jest.fn(),
       findById: jest.fn(),
       listByOrganization: jest.fn(),
-      getMembershipCapacity: jest.fn(),
       countOwners: jest.fn(),
       updateRole: jest.fn(),
       remove: jest.fn(),
+    };
+    planLimitsService = {
+      getMembershipCapacity: jest.fn(),
+      assertCanAddMember: jest.fn(),
     };
     logger = {
       log: jest.fn(),
@@ -91,6 +104,7 @@ describe('MembersService', () => {
     };
     service = new MembersService(
       repository as unknown as MembersRepository,
+      planLimitsService as unknown as PlanLimitsService,
       logger as unknown as ApplicationLogger,
     );
   });
@@ -112,7 +126,7 @@ describe('MembersService', () => {
       makeMember('owner', actorMemberId, actorUserId),
       makeMember('recruiter'),
     ]);
-    repository.getMembershipCapacity.mockResolvedValue({
+    planLimitsService.getMembershipCapacity.mockResolvedValue({
       currentUsers: 2,
       maxUsers: 3,
     });
@@ -273,10 +287,12 @@ describe('MembersService', () => {
   });
 
   it('validates maxUsers before a future flow adds another member', async () => {
-    repository.getMembershipCapacity.mockResolvedValue({
-      currentUsers: 3,
-      maxUsers: 3,
-    });
+    planLimitsService.assertCanAddMember.mockRejectedValue(
+      new ForbiddenException({
+        code: 'PLAN_LIMIT_EXCEEDED',
+        message: 'Organization user limit exceeded',
+      }),
+    );
 
     await expect(service.assertCanAddMember(organizationId)).rejects.toThrow(
       ForbiddenException,

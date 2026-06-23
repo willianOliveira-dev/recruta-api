@@ -5,8 +5,6 @@ import { DRIZZLE } from '../../../database/drizzle/drizzle.module';
 import {
   auditLog,
   member,
-  organizationSubscription,
-  subscriptionPlan,
   user,
 } from '../../../database/drizzle/schema';
 import { LastOrganizationOwnerError } from '../domain/member-errors';
@@ -17,11 +15,6 @@ type Database = typeof database;
 export interface MemberRecord {
   member: typeof member.$inferSelect;
   user: typeof user.$inferSelect;
-}
-
-export interface MembershipCapacity {
-  currentUsers: number;
-  maxUsers: number | null;
 }
 
 interface UpdateMemberRoleInput {
@@ -92,37 +85,6 @@ export class MembersRepository {
       .innerJoin(user, eq(member.userId, user.id))
       .where(eq(member.organizationId, organizationId))
       .orderBy(asc(member.createdAt), asc(user.email));
-  }
-
-  async getMembershipCapacity(
-    organizationId: string,
-  ): Promise<MembershipCapacity> {
-    const [membersCount] = await this.db
-      .select({ value: count(member.id) })
-      .from(member)
-      .where(eq(member.organizationId, organizationId));
-
-    const [plan] = await this.db
-      .select({
-        maxUsers: subscriptionPlan.maxUsers,
-      })
-      .from(organizationSubscription)
-      .innerJoin(
-        subscriptionPlan,
-        eq(organizationSubscription.planId, subscriptionPlan.id),
-      )
-      .where(
-        and(
-          eq(organizationSubscription.organizationId, organizationId),
-          eq(organizationSubscription.isActive, true),
-        ),
-      )
-      .limit(1);
-
-    return {
-      currentUsers: membersCount?.value ?? 0,
-      maxUsers: plan?.maxUsers ?? null,
-    };
   }
 
   async countOwners(organizationId: string): Promise<number> {
