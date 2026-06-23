@@ -1,12 +1,14 @@
 import { applyDecorators } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
+  ApiBadGatewayResponse,
   ApiConflictResponse,
   ApiDefaultResponse,
   ApiExtraModels,
   ApiForbiddenResponse,
   ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
+  ApiServiceUnavailableResponse,
   ApiTooManyRequestsResponse,
   ApiUnauthorizedResponse,
   ApiUnprocessableEntityResponse,
@@ -24,6 +26,8 @@ export type StandardErrorStatus =
   | 409
   | 422
   | 429
+  | 502
+  | 503
   | 500
   | 'default';
 
@@ -63,6 +67,14 @@ const errorResponseOptionsByStatus: Record<
     description: 'Unexpected internal server error.',
     type: ErrorResponseDto,
   },
+  502: {
+    description: 'Upstream service request failed.',
+    type: ErrorResponseDto,
+  },
+  503: {
+    description: 'Required service is unavailable or not configured.',
+    type: ErrorResponseDto,
+  },
   default: {
     description: 'Unexpected error.',
     type: ErrorResponseDto,
@@ -78,6 +90,8 @@ const decoratorByStatus = {
   422: ApiUnprocessableEntityResponse,
   429: ApiTooManyRequestsResponse,
   500: ApiInternalServerErrorResponse,
+  502: ApiBadGatewayResponse,
+  503: ApiServiceUnavailableResponse,
   default: ApiDefaultResponse,
 } satisfies Record<
   StandardErrorStatus,

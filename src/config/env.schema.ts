@@ -7,6 +7,34 @@ export const envSchema = z.object({
   GOOGLE_CLIENT_ID: z.string(),
   GOOGLE_SECRET_ID: z.string(),
   BETTER_AUTH_URL: z.string().url(),
+  MERCADO_PAGO_ACCESS_TOKEN: z.string(),
+  MERCADO_PAGO_WEBHOOK_SECRET: z.string(),
+  MERCADO_PAGO_BACK_URL: z.string().url(),
+  MERCADO_PAGO_WEBHOOK_URL: z.string().url(),
+  R2_ACCOUNT_ID: z.string(),
+  R2_ACCESS_KEY_ID: z.string(),
+  R2_SECRET_ACCESS_KEY: z.string(),
+  R2_BUCKET: z.string(),
+  R2_REGION: z.string().default('auto'),
+  TURNSTILE_SITE_KEY: z.string(),
+  TURNSTILE_SECRET_KEY: z.string(),
+  CANDIDATE_RESUME_MAX_FILE_SIZE_BYTES: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(10 * 1024 * 1024),
+  CANDIDATE_RESUME_UPLOAD_URL_EXPIRES_SECONDS: z.coerce
+    .number()
+    .int()
+    .positive()
+    .max(3600)
+    .default(600),
+  CANDIDATE_RESUME_ACCESS_URL_EXPIRES_SECONDS: z.coerce
+    .number()
+    .int()
+    .positive()
+    .max(3600)
+    .default(300),
   ALLOWED_TRUSTED_ORIGINS: z
     .string()
     .transform((value) => value.trim().split(',')),
