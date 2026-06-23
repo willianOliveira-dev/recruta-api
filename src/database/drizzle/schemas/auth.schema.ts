@@ -173,13 +173,20 @@ export const organizationSubscription = pgTable(
     planId: uuid('plan_id')
       .notNull()
       .references(() => subscriptionPlan.id),
+    pendingPlanId: uuid('pending_plan_id').references(() => subscriptionPlan.id),
     status: subscriptionStatusEnum('status').default('trialing').notNull(),
     isActive: boolean('is_active').default(true).notNull(),
     trialEndsAt: timestampUtc('trial_ends_at'),
     currentPeriodStart: timestampUtc('current_period_start'),
     currentPeriodEnd: timestampUtc('current_period_end'),
+    activatedAt: timestampUtc('activated_at'),
+    canceledAt: timestampUtc('canceled_at'),
     gatewayCustomerId: text('gateway_customer_id'),
     gatewaySubscriptionId: text('gateway_subscription_id'),
+    pendingGatewaySubscriptionId: text('pending_gateway_subscription_id'),
+    gatewayPlanId: text('gateway_plan_id'),
+    checkoutUrl: text('checkout_url'),
+    externalReference: text('external_reference'),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
@@ -189,6 +196,12 @@ export const organizationSubscription = pgTable(
     ),
     uniqueIndex('organization_subscription_gateway_subscription_uidx').on(
       table.gatewaySubscriptionId,
+    ),
+    uniqueIndex('organization_subscription_pending_gateway_subscription_uidx').on(
+      table.pendingGatewaySubscriptionId,
+    ),
+    uniqueIndex('organization_subscription_external_reference_uidx').on(
+      table.externalReference,
     ),
   ],
 );
@@ -295,6 +308,11 @@ export const organizationSubscriptionRelations = relations(
     plan: one(subscriptionPlan, {
       fields: [organizationSubscription.planId],
       references: [subscriptionPlan.id],
+    }),
+    pendingPlan: one(subscriptionPlan, {
+      fields: [organizationSubscription.pendingPlanId],
+      references: [subscriptionPlan.id],
+      relationName: 'pendingPlan',
     }),
   }),
 );

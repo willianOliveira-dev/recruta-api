@@ -13,6 +13,7 @@ import {
   updatedAt,
   uuidv7PrimaryKey,
 } from '../schema-helpers';
+import { organization } from './auth.schema';
 import { candidate } from './candidate.schema';
 import { job } from './job.schema';
 
@@ -20,6 +21,9 @@ export const application = pgTable(
   'application',
   {
     id: uuidv7PrimaryKey(),
+    organizationId: uuid('organization_id')
+      .notNull()
+      .references(() => organization.id, { onDelete: 'cascade' }),
     jobId: uuid('job_id')
       .notNull()
       .references(() => job.id, { onDelete: 'cascade' }),
@@ -36,6 +40,7 @@ export const application = pgTable(
     updatedAt: updatedAt(),
   },
   (table) => [
+    index('application_organization_id_idx').on(table.organizationId),
     index('application_job_id_idx').on(table.jobId),
     index('application_candidate_id_idx').on(table.candidateId),
     index('application_stage_idx').on(table.jobId, table.stage),

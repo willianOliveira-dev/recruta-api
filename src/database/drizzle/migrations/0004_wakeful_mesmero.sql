@@ -1,0 +1,2 @@
+ALTER TABLE "organization_subscription" ADD COLUMN "pending_gateway_subscription_id" text;--> statement-breakpoint
+CREATE UNIQUE INDEX "organization_subscription_pending_gateway_subscription_uidx" ON "organization_subscription" USING btree ("pending_gateway_subscription_id");

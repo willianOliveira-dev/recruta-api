@@ -1,0 +1,1 @@
+ALTER TABLE "subscription_plan" DROP COLUMN "checkout_url";

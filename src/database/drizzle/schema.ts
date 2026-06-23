@@ -1,6 +1,7 @@
 export * from './enums/application-stage.enum';
 export * from './enums/ai-processing-job-status.enum';
 export * from './enums/availability-type.enum';
+export * from './enums/candidate-resume-file-status.enum';
 export * from './enums/contract-type.enum';
 export * from './enums/embedding-document-status.enum';
 export * from './enums/embedding-entity-type.enum';
@@ -22,6 +23,7 @@ export * from './schemas/application.schema';
 export * from './schemas/audit-log.schema';
 export * from './schemas/auth.schema';
 export * from './schemas/candidate-experience.schema';
+export * from './schemas/candidate-resume-file.schema';
 export * from './schemas/candidate-skill.schema';
 export * from './schemas/candidate.schema';
 export * from './schemas/embedding.schema';

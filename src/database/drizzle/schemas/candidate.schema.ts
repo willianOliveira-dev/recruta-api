@@ -5,16 +5,21 @@ import {
   pgTable,
   text,
   uniqueIndex,
+  uuid,
 } from 'drizzle-orm/pg-core';
 import { availabilityTypeEnum } from '../enums/availability-type.enum';
 import { seniorityLevelEnum } from '../enums/seniority-level.enum';
 import { workModePreferenceEnum } from '../enums/work-mode-preference.enum';
 import { createdAt, updatedAt, uuidv7PrimaryKey } from '../schema-helpers';
+import { organization } from './auth.schema';
 
 export const candidate = pgTable(
   'candidate',
   {
     id: uuidv7PrimaryKey(),
+    organizationId: uuid('organization_id')
+      .notNull()
+      .references(() => organization.id, { onDelete: 'cascade' }),
     fullName: text('full_name').notNull(),
     email: text('email').notNull(),
     phone: text('phone'),
@@ -41,8 +46,15 @@ export const candidate = pgTable(
     updatedAt: updatedAt(),
   },
   (table) => [
-    uniqueIndex('candidate_email_uidx').on(table.email),
-    uniqueIndex('candidate_document_cpf_uidx').on(table.documentCpf),
+    index('candidate_organization_id_idx').on(table.organizationId),
+    uniqueIndex('candidate_org_email_uidx').on(
+      table.organizationId,
+      table.email,
+    ),
+    uniqueIndex('candidate_org_document_cpf_uidx').on(
+      table.organizationId,
+      table.documentCpf,
+    ),
     index('candidate_name_idx').on(table.fullName),
   ],
 );

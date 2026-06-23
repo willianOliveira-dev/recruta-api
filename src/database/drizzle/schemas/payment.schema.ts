@@ -1,6 +1,7 @@
 import {
   index,
   integer,
+  jsonb,
   pgTable,
   text,
   uniqueIndex,
@@ -16,6 +17,8 @@ import {
 } from '../schema-helpers';
 import { organization } from './auth.schema';
 
+type PaymentGatewayPayload = Record<string, unknown>;
+
 export const payment = pgTable(
   'payment',
   {
@@ -28,6 +31,13 @@ export const payment = pgTable(
     gateway: paymentGatewayEnum('gateway').notNull(),
     status: paymentStatusEnum('status').default('pending').notNull(),
     gatewayPaymentId: text('gateway_payment_id'),
+    gatewaySubscriptionId: text('gateway_subscription_id'),
+    gatewayPlanId: text('gateway_plan_id'),
+    gatewayNotificationId: text('gateway_notification_id'),
+    externalReference: text('external_reference'),
+    rawStatus: text('raw_status'),
+    rawStatusDetail: text('raw_status_detail'),
+    payload: jsonb('payload').$type<PaymentGatewayPayload>(),
     paidAt: timestampUtc('paid_at'),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
@@ -35,9 +45,15 @@ export const payment = pgTable(
   (table) => [
     index('payment_organization_id_idx').on(table.organizationId),
     index('payment_status_idx').on(table.status),
+    index('payment_gateway_subscription_idx').on(table.gatewaySubscriptionId),
+    index('payment_external_reference_idx').on(table.externalReference),
     uniqueIndex('payment_gateway_payment_uidx').on(
       table.gateway,
       table.gatewayPaymentId,
+    ),
+    uniqueIndex('payment_gateway_notification_uidx').on(
+      table.gateway,
+      table.gatewayNotificationId,
     ),
   ],
 );
