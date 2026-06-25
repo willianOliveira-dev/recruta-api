@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="src/asserts/images/recruta.png" alt="Recruta API Logo" width="300" />
+  <img src="src/assets/images/recruta.png" alt="Recruta API Logo" width="300" />
   
   <h1>Recruta API</h1>
   
