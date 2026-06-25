@@ -1,4 +1,11 @@
-import { index, integer, pgTable, text, uuid } from 'drizzle-orm/pg-core';
+import {
+  boolean,
+  index,
+  integer,
+  pgTable,
+  text,
+  uuid,
+} from 'drizzle-orm/pg-core';
 import { createdAt, updatedAt, uuidv7PrimaryKey } from '../schema-helpers';
 import { application } from './application.schema';
 import { user } from './auth.schema';
@@ -15,6 +22,9 @@ export const interviewNote = pgTable(
       .references(() => user.id, { onDelete: 'restrict' }),
     content: text('content').notNull(),
     rating: integer('rating'),
+    includeInAiContext: boolean('include_in_ai_context')
+      .default(false)
+      .notNull(),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },

@@ -50,6 +50,20 @@
       "when": 1782220714874,
       "tag": "0006_flat_black_tarantula",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1782253498212,
+      "tag": "0007_equal_glorian",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1782303515291,
+      "tag": "0008_woozy_dust",
+      "breakpoints": true
     }
   ]
 }

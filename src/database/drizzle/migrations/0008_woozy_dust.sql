@@ -1,0 +1,1 @@
+ALTER TABLE "interview_note" ADD COLUMN "include_in_ai_context" boolean DEFAULT false NOT NULL;
