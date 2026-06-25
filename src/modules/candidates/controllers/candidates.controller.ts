@@ -12,6 +12,7 @@ import {
 } from '@nestjs/common';
 import {
   ApiCookieAuth,
+  ApiHeader,
   ApiOperation,
   ApiParam,
   ApiTags,
@@ -20,6 +21,7 @@ import { CurrentSession } from '../../../common/decorators/current-session.decor
 import { AuthenticatedGuard } from '../../../common/guards/authenticated.guard';
 import { ApiStandardResponse } from '../../../common/http/decorators/api-standard-response.decorator';
 import type { AuthenticatedSession } from '../../auth/types/authenticated-request';
+import { TurnstileGuard } from '../../auth/guards/turnstile.guard';
 import {
   CandidateResumeAccessQueryDto,
   CandidateResumeAccessUrlResponseDto,
@@ -47,9 +49,15 @@ export class CandidatesController {
   ) {}
 
   @Post('organizations/current/candidates')
+  @UseGuards(TurnstileGuard)
   @ApiOperation({
     summary: 'Create current organization candidate',
     operationId: 'createCurrentOrganizationCandidate',
+  })
+  @ApiHeader({
+    name: 'x-captcha-response',
+    description: 'Cloudflare Turnstile token',
+    required: true,
   })
   @ApiStandardResponse({
     description: 'Current organization candidate created',
