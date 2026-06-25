@@ -94,6 +94,26 @@ export const verification = pgTable(
   (table) => [index('verification_identifier_idx').on(table.identifier)],
 );
 
+export const authLoginAttempt = pgTable('auth_login_attempt', {
+  emailKey: text('email_key').primaryKey(),
+  failedCount: integer('failed_count').default(0).notNull(),
+  firstFailedAt: timestampUtc('first_failed_at').notNull(),
+  lastFailedAt: timestampUtc('last_failed_at').notNull(),
+  blockedUntil: timestampUtc('blocked_until'),
+  turnstileRequired: boolean('turnstile_required').default(false).notNull(),
+  createdAt: createdAt(),
+  updatedAt: updatedAt(),
+});
+
+export const authRateLimitBucket = pgTable('auth_rate_limit_bucket', {
+  key: text('key').primaryKey(),
+  count: integer('count').default(0).notNull(),
+  windowStartedAt: timestampUtc('window_started_at').notNull(),
+  expiresAt: timestampUtc('expires_at').notNull(),
+  createdAt: createdAt(),
+  updatedAt: updatedAt(),
+});
+
 export const organization = pgTable(
   'organization',
   {
