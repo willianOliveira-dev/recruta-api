@@ -2,16 +2,16 @@
 
 © 2026 Willian Oliveira. Todos os Direitos Reservados (All Rights Reserved).
 
-Este documento estabelece os termos legais de uso, cópia e distribuição do código-fonte, design, ativos e arquitetura associados ao repositório deste portfólio.
+Este documento estabelece os termos legais de uso, cópia e distribuição do código-fonte, esquemas de banco de dados e arquitetura associados ao repositório desta API.
 
 ##  Termos de Propriedade
 Este projeto é uma obra de autoria original protegida por leis de propriedade intelectual, incluindo, mas não se limitando a, as leis de direitos autorais da República Federativa do Brasil (Lei nº 9.610/98 e Lei nº 9.609/98).
 
-Toda a arquitetura de software, componentes de interface (UI/UX), textos de apresentação, identidade visual e integrações sistêmicas desenvolvidos neste repositório são de propriedade exclusiva de Willian Oliveira.
+Toda a arquitetura de software, esquemas de banco de dados, regras de negócio e integrações sistêmicas desenvolvidos neste repositório são de propriedade exclusiva de Willian Oliveira.
 
 > [!CAUTION]
 > **RESTRIÇÃO TOTAL DE CÓPIA E USO COMERCIAL**
-> É estritamente proibido clonar, copiar, distribuir, modificar, publicar ou utilizar parcial ou integralmente qualquer parte deste código-fonte para a criação de outros portfólios, produtos comerciais ou projetos derivados sem a autorização prévia, expressa e por escrito do autor.
+> É estritamente proibido clonar, copiar, distribuir, modificar, publicar ou utilizar parcial ou integralmente qualquer parte deste código-fonte para a criação de outras APIs, produtos comerciais ou projetos derivados sem a autorização prévia, expressa e por escrito do autor.
 
 ##  O que é permitido? (Uso Justo / Fair Use)
 Como o código está hospedado publicamente no GitHub, você tem a permissão concedida pelos Termos de Serviço do GitHub de:
@@ -21,8 +21,8 @@ Como o código está hospedado publicamente no GitHub, você tem a permissão co
 - Usar trechos de conhecimento isolados (como a forma de configurar uma rota ou usar uma biblioteca genérica) para aprendizado pessoal.
 
 ##  O que NÃO é permitido?
-- Hospedar este site, parcial ou integralmente, alterando o nome para usá-lo como o seu próprio portfólio pessoal.
-- Reutilizar a identidade visual, as animações combinadas e o design da interface sob sua própria autoria.
+- Hospedar esta API, parcial ou integralmente, alterando o nome para usá-la como um serviço próprio ou projeto pessoal.
+- Reutilizar a estrutura de banco de dados, fluxos de sistema e arquitetura de código sob sua própria autoria.
 - Remover este arquivo de licença ou as menções de autoria do README.md.
 - Vender ou monetizar o código deste projeto de qualquer forma.
 
