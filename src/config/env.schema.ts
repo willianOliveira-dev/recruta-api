@@ -35,6 +35,11 @@ export const envSchema = z.object({
     .positive()
     .max(3600)
     .default(300),
+  RABBITMQ_URL: z.string().url().optional(),
+  RABBITMQ_DOMAIN_EXCHANGE: z.string().default('recruta.domain'),
+  RABBITMQ_AI_EXCHANGE: z.string().default('recruta.ai'),
+  AI_RESULTS_SHARED_SECRET: z.string(),
+  OUTBOX_PUBLISH_SHARED_SECRET: z.string(),
   ALLOWED_TRUSTED_ORIGINS: z
     .string()
     .transform((value) => value.trim().split(',')),

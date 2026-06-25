@@ -54,7 +54,7 @@ export const configureAppRoutes = (
     origin: env.ALLOWED_TRUSTED_ORIGINS,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-captcha-response'],
   });
 
   setupSwagger(app);
